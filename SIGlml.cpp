@@ -90,7 +90,7 @@ a> for the whole program
 
 #include<iostream>
 
-//debug display (0- quiet, 1- only final image, 2- image step by step)
+//debug display (0- quiet, 1- only final image (and only if -O true), 2- image step by step)
 //#define siglml_debug 0
 #define siglml_debug 1
 //#define siglml_debug 2
@@ -304,6 +304,7 @@ version: "+std::string(VERSION)+"\t(other library versions: DGlml_parameter_form
   cimg_help("\nParticle image options");
   ///image file name (output)
   const char* filename= cimg_option("-o","particles.png","output image file name");
+  const bool show_image = cimg_option("-O",true,"display position image");
   ///image size
   int width = cimg_option("-W",512,"image width");
   int height= cimg_option("-H",512,"image height");
@@ -379,7 +380,7 @@ bool test_non_hiden_particles_center=cimg_option("-tnhc",false,"detecting the no
 //cut of the image gray level to suite grey level dynamics
   ima.cut(0,cutoff);
 #if siglml_debug>0
-  ima.display("final SIG image");
+  if(show_image) ima.display("final SIG image");
 #endif
 //save
 ///08bit
