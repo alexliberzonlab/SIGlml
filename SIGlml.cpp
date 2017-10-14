@@ -91,10 +91,10 @@ a> for the whole program
 #include<iostream>
 
 //debug display (0- quiet, 1- only final image, 2- image step by step)
-//#define cimg_debug 0
-#define cimg_debug 1
-//#define cimg_debug 2
-//#define cimg_debug 3
+//#define siglml_debug 0
+#define siglml_debug 1
+//#define siglml_debug 2
+//#define siglml_debug 3
 #define cimg_plugin "../CImg.PlugIn/PlugIn.CImg.sprite_multi_layer.h"
 
 #include "../CImg/CImg.h"
@@ -188,7 +188,7 @@ non_hiden_particles.assign(1,1,1,4);
 //draw gaussian particles on the image
  cimg_forX(particles,p)
   {
-#if cimg_debug>2
+#if siglml_debug>2
   cout<<p<<endl<<flush;
 #endif
     const int x=(int)particles(p,0);
@@ -202,7 +202,7 @@ non_hiden_particles.assign(1,1,1,4);
     tmp.draw_gaussian((int)(2*sigma_max)+sx,(int)(2*sigma_max)+sy,q,&w); 
 	tmp.mul(tmp.get_threshold(35,false,true));
 
-#if cimg_debug>2
+#if siglml_debug>2
 tmp.display("sprite");
 #endif
 // add particale to image
@@ -219,7 +219,7 @@ if(test_non_hiden_particles_center)
 	 
 	 }  
 	
-#if cimg_debug>2
+#if siglml_debug>2
   cout<<"add_sprite"<<endl<<flush;
 #endif
 
@@ -347,7 +347,7 @@ bool test_non_hiden_particles_center=cimg_option("-tnhc",false,"detecting the no
     if(!(error=particles.load(createParticleType))) return error;
     if(particles.dimv()<4) {cerr<<"\nerror: needs at least 4 parameters for a gaussian particle (file \""<<createParticleType<<"\" do NOT."<<flush;return 1;}
   }
-#if cimg_debug>1
+#if siglml_debug>1
   particles.display("particles");
 #endif
 //add particles within the image
@@ -363,22 +363,22 @@ bool test_non_hiden_particles_center=cimg_option("-tnhc",false,"detecting the no
  non_hiden_particles.save(file);
   }
 
-#if cimg_debug>1
+#if siglml_debug>1
   ima.display("particles only SIGlml");
 #endif
 //add grey level noise
   add_noise(ima,noise_min,noise_max);
-#if cimg_debug>1
+#if siglml_debug>1
   ima.display("particles and noise SIGlml");
 #endif
 //add background illumination ramp
   add_ramp(ima,ramp_const,ramp_slope);
-#if cimg_debug>1
+#if siglml_debug>1
   ima.display("particles plus noise and ramp SIGlml");
 #endif
 //cut of the image gray level to suite grey level dynamics
   ima.cut(0,cutoff);
-#if cimg_debug>0
+#if siglml_debug>0
   ima.display("final SIG image");
 #endif
 //save
