@@ -152,8 +152,8 @@ template<typename T> int get_particles(int &n,CImg<T> &particles)
   float x,y,q,w;
   while(cin>>x>>y>>q>>w)
   {
-//cout<<endl<<"("<<x<<","<<y<<")";
-    p++;if(p>n) {cout<<endl<<"information: not enough space in the particle array (i.e. reallocating more space), set -n option to speed up execution (n should be higher than "<<n+1<<")."<<flush;n+=512;coord_x.resize(n);coord_y.resize(n);psigma.resize(n),color.resize(n);n--;}
+//cerr<<endl<<"("<<x<<","<<y<<")";
+    p++;if(p>n) {cerr<<endl<<"information: not enough space in the particle array (i.e. reallocating more space), set -n option to speed up execution (n should be higher than "<<n+1<<").\n"<<flush;n+=512;coord_x.resize(n);coord_y.resize(n);psigma.resize(n),color.resize(n);n--;}
     coord_x(p)=x;
     coord_y(p)=y;
     psigma(p)=q;
@@ -189,7 +189,7 @@ non_hiden_particles.assign(1,1,1,4);
  cimg_forX(particles,p)
   {
 #if siglml_debug>2
-  cout<<p<<endl<<flush;
+  cerr<<p<<endl<<flush;
 #endif
     const int x=(int)particles(p,0);
     const int y=(int)particles(p,1);
@@ -220,7 +220,7 @@ if(test_non_hiden_particles_center)
 	 }  
 	
 #if siglml_debug>2
-  cout<<"add_sprite"<<endl<<flush;
+  cerr<<"add_sprite"<<endl<<flush;
 #endif
 
     ima.add_sprite(tmp,x-(int)(2*sigma_max),y-(int)(2*sigma_max),0,0);//,2);
@@ -330,7 +330,7 @@ bool test_non_hiden_particles_center=cimg_option("-tnhc",false,"detecting the no
   CImg<float> particles;
   if (!cimg::strcmp("random",createParticleType))
   {
-    cout<<"\rinformation: create particles with random parameters.\n"<<flush;
+    cerr<<"information: create particles with random parameters.\n"<<flush;
     create_particles(nbParticles,particles,
                      (float)0,(float)ima.dimx()-1,(float)0,(float)ima.dimy()-1,
                      (float)sigma_min,(float)sigma_max,
@@ -338,21 +338,21 @@ bool test_non_hiden_particles_center=cimg_option("-tnhc",false,"detecting the no
   }
   else if (!cimg::strcmp("stdin",createParticleType))
   {
-    cout<<"\rinformation: get particles from stdin.\n"<<flush;
+    cerr<<"information: get particles from stdin.\n"<<flush;
     get_particles(nbParticles,particles);
   }
   else
   {
-    cout<<"\rinformation: get particles from file \""<<createParticleType<<"\".\n"<<flush;
+    cerr<<"information: get particles from file \""<<createParticleType<<"\".\n"<<flush;
     int error;
     if(!(error=particles.load(createParticleType))) return error;
-    if(particles.dimv()<4) {cerr<<"\nerror: needs at least 4 parameters for a gaussian particle (file \""<<createParticleType<<"\" do NOT."<<flush;return 1;}
+    if(particles.dimv()<4) {cerr<<"error: needs at least 4 parameters for a gaussian particle (file \""<<createParticleType<<"\" do NOT.\n"<<flush;return 1;}
   }
 #if siglml_debug>1
   particles.display("particles");
 #endif
 //add particles within the image
-  cout<<"\rinformation: create the image of "<<particles.dimx()<<" particle"<<((particles.dimx()>1)?"s":" ")<<".\n"<<flush;
+  cerr<<"information: create the image of "<<particles.dimx()<<" particle"<<((particles.dimx()>1)?"s":" ")<<".\n"<<flush;
   CImg<float> non_hiden_particles;
 
   add_particles(ima,particles,test_non_hiden_particles_center,non_hiden_particles); 
