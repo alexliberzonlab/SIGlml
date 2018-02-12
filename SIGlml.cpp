@@ -90,10 +90,11 @@ a> for the whole program
 
 #include<iostream>
 
-//debug display (0- quiet, 1- only final image, 2- image step by step)
-//#define cimg_debug 0
-//#define cimg_debug 1
-#define cimg_debug 2
+//debug display (0- quiet, 1- only final image (and only if -O true), 2- image step by step)
+//#define siglml_debug 0
+#define siglml_debug 1
+//#define siglml_debug 2
+//#define siglml_debug 3
 #define cimg_plugin "../CImg.PlugIn/PlugIn.CImg.sprite_multi_layer.h"
 
 #include "../CImg/CImg.h"
@@ -151,8 +152,8 @@ template<typename T> int get_particles(int &n,CImg<T> &particles)
   float x,y,q,w;
   while(cin>>x>>y>>q>>w)
   {
-//cout<<endl<<"("<<x<<","<<y<<")";
-    p++;if(p>n) {cout<<endl<<"information: not enough space in the particle array (i.e. reallocating more space), set -n option to speed up execution (n should be higher than "<<n+1<<")."<<flush;n+=512;coord_x.resize(n);coord_y.resize(n);psigma.resize(n),color.resize(n);n--;}
+//cerr<<endl<<"("<<x<<","<<y<<")";
+    p++;if(p>n) {cerr<<endl<<"information: not enough space in the particle array (i.e. reallocating more space), set -n option to speed up execution (n should be higher than "<<n+1<<").\n"<<flush;n+=512;coord_x.resize(n);coord_y.resize(n);psigma.resize(n),color.resize(n);n--;}
     coord_x(p)=x;
     coord_y(p)=y;
     psigma(p)=q;
@@ -187,6 +188,9 @@ non_hiden_particles.assign(1,1,1,4);
 //draw gaussian particles on the image
  cimg_forX(particles,p)
   {
+#if siglml_debug>2
+  cerr<<p<<endl<<flush;
+#endif
     const int x=(int)particles(p,0);
     const int y=(int)particles(p,1);
     const float sx=(float)particles(p,0)-(float)x;
@@ -197,6 +201,10 @@ non_hiden_particles.assign(1,1,1,4);
  //create particle on a temporary image (i.e. single particle image)
     tmp.draw_gaussian((int)(2*sigma_max)+sx,(int)(2*sigma_max)+sy,q,&w); 
 	tmp.mul(tmp.get_threshold(35,false,true));
+
+#if siglml_debug>2
+tmp.display("sprite");
+#endif
 // add particale to image
  // extraction of data on the non occluded center
 if(test_non_hiden_particles_center)
@@ -211,8 +219,11 @@ if(test_non_hiden_particles_center)
 	 
 	 }  
 	
+#if siglml_debug>2
+  cerr<<"add_sprite"<<endl<<flush;
+#endif
 
-    ima.add_sprite(tmp,x-(int)(2*sigma_max),y-(int)(2*sigma_max),0,0,2);
+    ima.add_sprite(tmp,x-(int)(2*sigma_max),y-(int)(2*sigma_max),0,0);//,2);
 
  
   }
@@ -279,7 +290,7 @@ version: "+std::string(VERSION)+"\t(other library versions: DGlml_parameter_form
 //particles
   cimg_help("\nParticle options");
   ///particle parameter from stdin
-  const char* createParticleType= cimg_option("-i","random","particle parameters source (cimg file or can be set to: random (internal) or stdin (external) (e.g. echo 31.234 12.345 | ./SIGlml -W 64 -H 64 -i stdin)");
+  const char* createParticleType= cimg_option("-i","random","particle parameters source (cimg file or can be set to: random (internal) or stdin (external) (e.g. echo 32.102 21.012 2.345 234.56 | ./SIGlml -W 64 -H 64 -i stdin)");
   ///particle number
   int nbParticles= cimg_option("-n",10,"number of particles");
   cimg_help("  internal mode only options");
@@ -293,6 +304,7 @@ version: "+std::string(VERSION)+"\t(other library versions: DGlml_parameter_form
   cimg_help("\nParticle image options");
   ///image file name (output)
   const char* filename= cimg_option("-o","particles.png","output image file name");
+  const bool show_image = cimg_option("-O",true,"display position image");
   ///image size
   int width = cimg_option("-W",512,"image width");
   int height= cimg_option("-H",512,"image height");
@@ -318,7 +330,7 @@ bool test_non_hiden_particles_center=cimg_option("-tnhc",false,"detecting the no
   CImg<float> particles;
   if (!cimg::strcmp("random",createParticleType))
   {
-    cout<<"\rinformation: create particles with random parameters."<<flush;
+    cerr<<"information: create particles with random parameters.\n"<<flush;
     create_particles(nbParticles,particles,
                      (float)0,(float)ima.dimx()-1,(float)0,(float)ima.dimy()-1,
                      (float)sigma_min,(float)sigma_max,
@@ -326,18 +338,21 @@ bool test_non_hiden_particles_center=cimg_option("-tnhc",false,"detecting the no
   }
   else if (!cimg::strcmp("stdin",createParticleType))
   {
-    cout<<"\rinformation: get particles from stdin."<<flush;
+    cerr<<"information: get particles from stdin.\n"<<flush;
     get_particles(nbParticles,particles);
   }
   else
   {
-    cout<<"\rinformation: get particles from file \""<<createParticleType<<"\"."<<flush;
+    cerr<<"information: get particles from file \""<<createParticleType<<"\".\n"<<flush;
     int error;
     if(!(error=particles.load(createParticleType))) return error;
-    if(particles.dimv()<4) {cerr<<"\nerror: needs at least 4 parameters for a gaussian particle (file \""<<createParticleType<<"\" do NOT."<<flush;return 1;}
+    if(particles.dimv()<4) {cerr<<"error: needs at least 4 parameters for a gaussian particle (file \""<<createParticleType<<"\" do NOT.\n"<<flush;return 1;}
   }
+#if siglml_debug>1
+  particles.display("particles");
+#endif
 //add particles within the image
-  cout<<"\rinformation: create the image of "<<particles.dimx()<<" particle"<<((particles.dimx()>1)?"s":" ")<<".\n"<<flush;
+  cerr<<"information: create the image of "<<particles.dimx()<<" particle"<<((particles.dimx()>1)?"s":" ")<<".\n"<<flush;
   CImg<float> non_hiden_particles;
 
   add_particles(ima,particles,test_non_hiden_particles_center,non_hiden_particles); 
@@ -349,23 +364,23 @@ bool test_non_hiden_particles_center=cimg_option("-tnhc",false,"detecting the no
  non_hiden_particles.save(file);
   }
 
-#if cimg_debug>1
- // ima.display("particles only SIGlml");
+#if siglml_debug>1
+  ima.display("particles only SIGlml");
 #endif
 //add grey level noise
   add_noise(ima,noise_min,noise_max);
-#if cimg_debug>1
- // ima.display("particles and noise SIGlml");
+#if siglml_debug>1
+  ima.display("particles and noise SIGlml");
 #endif
 //add background illumination ramp
   add_ramp(ima,ramp_const,ramp_slope);
-#if cimg_debug>1
- // ima.display("particles plus noise and ramp SIGlml");
+#if siglml_debug>1
+  ima.display("particles plus noise and ramp SIGlml");
 #endif
 //cut of the image gray level to suite grey level dynamics
   ima.cut(0,cutoff);
-#if cimg_debug>0
-  //ima.display("final SIG image");
+#if siglml_debug>0
+  if(show_image) ima.display("final SIG image");
 #endif
 //save
 ///08bit
